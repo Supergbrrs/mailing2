@@ -38,19 +38,23 @@ def carregar_arquivo(uploaded_file):
         return df
     return None
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, allow_output_mutation=True)
 def carregar_blacklist():
     try:
         url = "https://drive.google.com/uc?id=1fMLO1ev3Hev1xANyspv2qIHpLFqvFzU2"
         file_content = requests.get(url).content
         df_blacklist = pd.read_csv(BytesIO(file_content), header=None, names=['Numero'], dtype=str)
+
+        # Padronizar e remover o código do país (55)
+        df_blacklist['Numero'] = df_blacklist['Numero'].apply(lambda x: padronizar_numero(x).strip())
+
         return df_blacklist
     except Exception as e:
         st.error(f"Erro ao carregar a blacklist: {e}")
         return None
 
 def padronizar_numero(numero):
-    numero = re.sub(r'\D', '', str(numero))
+    numero = re.sub(r'\D', '', str(numero)).strip()
     if numero.startswith("55") and len(numero) > 11:
         numero = numero[2:]
     return numero
@@ -68,7 +72,7 @@ def validar_numero(numero):
     return "Válido"
 
 st.set_page_config(page_title="Higienização de Mailing", layout="centered")
-st.title("📞 Sistema de Higienização de Mailing")
+st.title("📞 Sistema de Higienização de Mailing - TESTE")
 
 uploaded_file = st.file_uploader("Carregue seu arquivo de mailing (CSV ou XLSX)", type=["csv", "xlsx"])
 
@@ -89,8 +93,6 @@ if uploaded_file:
             blacklist = carregar_blacklist()
 
             if blacklist is not None:
-                # Padronizar blacklist
-                blacklist['Numero'] = blacklist['Numero'].apply(padronizar_numero)
                 numeros_blacklist = set(blacklist['Numero'])
 
                 total_validos = 0
@@ -98,7 +100,7 @@ if uploaded_file:
                 total_blacklist = 0
 
                 for col in colunas_telefone:
-                    df[col] = df[col].astype(str).apply(padronizar_numero)
+                    df[col] = df[col].astype(str).apply(lambda x: padronizar_numero(x).strip())
 
                     # Contar e remover números da blacklist
                     total_blacklist += df[col].isin(numeros_blacklist).sum()
@@ -128,4 +130,3 @@ if uploaded_file:
                     file_name="mailing_higienizado.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-
