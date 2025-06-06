@@ -38,7 +38,7 @@ def carregar_arquivo(uploaded_file):
         return df
     return None
 
-@st.cache_data(show_spinner=False, allow_output_mutation=True)
+@st.cache_data(show_spinner=False)
 def carregar_blacklist():
     try:
         url = "https://drive.google.com/uc?id=1fMLO1ev3Hev1xANyspv2qIHpLFqvFzU2"
@@ -71,8 +71,8 @@ def validar_numero(numero):
 
     return "Válido"
 
-st.set_page_config(page_title="Higienização de Mailing", layout="centered")
-st.title("📞 Sistema de Higienização de Mailing - TESTE")
+st.set_page_config(page_title="Higienização de Mailing TESTE", layout="centered")
+st.title("📞 Sistema de Higienização de Mailing TESTE")
 
 uploaded_file = st.file_uploader("Carregue seu arquivo de mailing (CSV ou XLSX)", type=["csv", "xlsx"])
 
